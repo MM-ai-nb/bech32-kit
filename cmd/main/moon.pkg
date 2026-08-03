@@ -1,0 +1,5 @@
+import {
+  "moonbit-user/bech32-kit" @bech32,
+}
+
+pkgtype(kind: "executable")
