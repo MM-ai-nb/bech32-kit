@@ -3,8 +3,8 @@
 ## 基本信息
 
 - 项目名称：bech32-kit：纯 MoonBit Bech32/Bech32m 编码解码与 SegWit 地址校验库
-- 参赛者：<待填写>
-- 联系方式：<待填写>
+- 参赛者：卓娟
+- 联系方式：13855703757，609588498@qq.com
 - GitHub 仓库链接：<待填写>
 - 项目方向：MoonBit 原生编码解码基础库 / WebAssembly 可复用组件
 - 是否为移植项目：否，原创 MoonBit 开源项目
@@ -28,7 +28,7 @@ bech32-kit 提供纯 MoonBit 的 Bech32/Bech32m 编码、解码、checksum 校�
 
 ## 项目现有基础与本次计划
 
-当前已完成 MoonBit 工程、核心源码、可运行示例、单元测试、README、API 文档、MIT 许可证和 GitHub Actions CI。后续由参赛者填写个人信息、创建公开 GitHub 仓库、替换 Mooncakes owner，并执行 `moon publish --dry-run` 与正式发布。
+当前已完成 MoonBit 工程、核心源码、可运行示例、单元测试、README、API 文档、MIT 许可证和 GitHub Actions CI。后续计划是创建公开 GitHub 仓库，替换真实仓库地址与 Mooncakes owner，执行 `moon publish --dry-run`，通过后正式发布到 mooncakes.io。
 
 ## 原创或参考说明
 
