@@ -1,10 +1,10 @@
-name = "moonbit-user/bech32-kit"
+name = "MM-ai-nb/bech32-kit"
 
 version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/moonbit-user/bech32-kit.git"
+repository = "https://github.com/MM-ai-nb/bech32-kit.git"
 
 license = "MIT"
 

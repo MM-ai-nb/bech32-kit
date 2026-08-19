@@ -24,6 +24,99 @@ pub(all) struct SegwitAddress {
 } derive(Eq, Debug)
 
 ///|
+/// Letter-case classification for Bech32 input strings.
+pub(all) enum CaseStyle {
+  CaseNoLetters
+  CaseLower
+  CaseUpper
+  CaseMixed
+} derive(Eq, Debug)
+
+///|
+/// Common SegWit network names inferred from the human-readable part.
+pub(all) enum SegwitNetwork {
+  NetworkBitcoinMainnet
+  NetworkBitcoinTestnet
+  NetworkBitcoinRegtest
+  NetworkUnknown(String)
+} derive(Eq, Debug)
+
+///|
+/// Common witness program categories useful for wallet and indexer diagnostics.
+pub(all) enum WitnessProgramKind {
+  WitnessProgramP2WPKH
+  WitnessProgramP2WSH
+  WitnessProgramTaproot
+  WitnessProgramOther
+} derive(Eq, Debug)
+
+///|
+/// Mechanical profile of an input string. This is available even for malformed
+/// inputs and is useful for command-line diagnostics.
+pub(all) struct InputProfile {
+  input : String
+  normalized : String
+  total_length : Int
+  separator_index : Int
+  hrp_length : Int
+  data_part_length : Int
+  payload_length : Int
+  checksum_length : Int
+  case_style : CaseStyle
+  has_separator : Bool
+  has_checksum : Bool
+} derive(Eq, Debug)
+
+///|
+/// Detailed information for a valid Bech32 or Bech32m string.
+pub(all) struct Bech32Info {
+  input : String
+  normalized : String
+  hrp : String
+  data : Array[Int]
+  checksum : Array[Int]
+  variant : Variant
+  total_length : Int
+  separator_index : Int
+  data_part_length : Int
+  data_length : Int
+  checksum_length : Int
+  case_style : CaseStyle
+  segwit_valid : Bool
+} derive(Eq, Debug)
+
+///|
+/// Detailed information for a valid SegWit address.
+pub(all) struct SegwitInfo {
+  input : String
+  normalized : String
+  hrp : String
+  version : Int
+  program : Array[Int]
+  program_length : Int
+  variant : Variant
+  network : SegwitNetwork
+  program_kind : WitnessProgramKind
+} derive(Eq, Debug)
+
+///|
+/// Stable validation report for batch tools. String fields are intentionally
+/// presentation-ready so callers can print reports without matching every enum.
+pub(all) struct ValidationReport {
+  input : String
+  normalized : String
+  valid : Bool
+  segwit_valid : Bool
+  variant : String
+  hrp : String
+  error_code : String
+  error_message : String
+  total_length : Int
+  separator_index : Int
+  data_part_length : Int
+} derive(Eq, Debug)
+
+///|
 /// Structured errors returned by the parser and validators.
 pub(all) enum Bech32Error {
   EmptyInput
@@ -41,6 +134,8 @@ pub(all) enum Bech32Error {
   InvalidWitnessVersion(Int)
   InvalidWitnessProgramLength(Int, Int)
   InvalidWitnessEncoding(Variant, Variant)
+  UnexpectedHrp(String, String)
+  UnexpectedNetwork(SegwitNetwork, SegwitNetwork)
 } derive(Eq, Debug)
 
 ///|
@@ -287,6 +382,444 @@ pub fn is_valid_segwit(input : String) -> Bool {
 }
 
 ///|
+/// Returns a stable lowercase display name for a checksum variant.
+pub fn variant_name(variant : Variant) -> String {
+  match variant {
+    Bech32 => "bech32"
+    Bech32m => "bech32m"
+  }
+}
+
+///|
+/// Returns a stable lowercase display name for input letter-case style.
+pub fn case_style_name(style : CaseStyle) -> String {
+  match style {
+    CaseNoLetters => "no_letters"
+    CaseLower => "lower"
+    CaseUpper => "upper"
+    CaseMixed => "mixed"
+  }
+}
+
+///|
+/// Returns a stable display name for a SegWit network classification.
+pub fn network_name(network : SegwitNetwork) -> String {
+  match network {
+    NetworkBitcoinMainnet => "bitcoin_mainnet"
+    NetworkBitcoinTestnet => "bitcoin_testnet"
+    NetworkBitcoinRegtest => "bitcoin_regtest"
+    NetworkUnknown(_) => "unknown"
+  }
+}
+
+///|
+/// Returns a stable display name for a witness program category.
+pub fn witness_program_kind_name(kind : WitnessProgramKind) -> String {
+  match kind {
+    WitnessProgramP2WPKH => "p2wpkh"
+    WitnessProgramP2WSH => "p2wsh"
+    WitnessProgramTaproot => "taproot"
+    WitnessProgramOther => "other"
+  }
+}
+
+///|
+/// Classifies whether an input is lowercase, uppercase, mixed-case, or has no
+/// ASCII letters. Bech32 accepts only all-lowercase or all-uppercase strings.
+pub fn classify_case(input : String) -> CaseStyle {
+  let mut has_lower = false
+  let mut has_upper = false
+  for ch in input {
+    if ch.is_ascii_lowercase() {
+      has_lower = true
+    } else if ch.is_ascii_uppercase() {
+      has_upper = true
+    }
+  }
+  if has_lower && has_upper {
+    CaseMixed
+  } else if has_lower {
+    CaseLower
+  } else if has_upper {
+    CaseUpper
+  } else {
+    CaseNoLetters
+  }
+}
+
+///|
+/// Builds a structural profile without validating checksum or character set.
+pub fn profile(input : String) -> InputProfile {
+  let normalized = input.to_lower()
+  let sep = last_separator(normalized)
+  let has_sep = sep >= 0
+  let data_part_length = if has_sep { input.length() - sep - 1 } else { 0 }
+  let payload_length = if data_part_length >= 6 {
+    data_part_length - 6
+  } else {
+    0
+  }
+  let checksum_length = if data_part_length >= 6 { 6 } else { data_part_length }
+  {
+    input,
+    normalized,
+    total_length: input.length(),
+    separator_index: sep,
+    hrp_length: if has_sep {
+      sep
+    } else {
+      0
+    },
+    data_part_length,
+    payload_length,
+    checksum_length,
+    case_style: classify_case(input),
+    has_separator: has_sep,
+    has_checksum: data_part_length >= 6,
+  }
+}
+
+///|
+/// Returns a lowercase canonical representation after checksum validation.
+pub fn normalize(input : String) -> Result[String, Bech32Error] {
+  match decode(input) {
+    Err(err) => Err(err)
+    Ok(_) => Ok(input.to_lower())
+  }
+}
+
+///|
+/// Returns true when an input is valid and already in canonical lowercase form.
+pub fn is_canonical(input : String) -> Bool {
+  match normalize(input) {
+    Err(_) => false
+    Ok(canonical) => canonical == input
+  }
+}
+
+///|
+/// Returns true only for valid Bech32 strings.
+pub fn is_bech32(input : String) -> Bool {
+  match decode(input) {
+    Err(_) => false
+    Ok(decoded) => decoded.variant == Bech32
+  }
+}
+
+///|
+/// Returns true only for valid Bech32m strings.
+pub fn is_bech32m(input : String) -> Bool {
+  match decode(input) {
+    Err(_) => false
+    Ok(decoded) => decoded.variant == Bech32m
+  }
+}
+
+///|
+/// Extracts the HRP after full checksum validation.
+pub fn hrp_of(input : String) -> Result[String, Bech32Error] {
+  match decode(input) {
+    Err(err) => Err(err)
+    Ok(decoded) => Ok(decoded.hrp)
+  }
+}
+
+///|
+/// Extracts payload data words after full checksum validation.
+pub fn data_words_of(input : String) -> Result[Array[Int], Bech32Error] {
+  match decode(input) {
+    Err(err) => Err(err)
+    Ok(decoded) => Ok(decoded.data)
+  }
+}
+
+///|
+/// Extracts the six checksum words after full checksum validation.
+pub fn checksum_words_of(input : String) -> Result[Array[Int], Bech32Error] {
+  match decode(input) {
+    Err(err) => Err(err)
+    Ok(_) => Ok(checksum_words_from_normalized(input.to_lower()))
+  }
+}
+
+///|
+/// Decodes an input and additionally checks the expected HRP.
+pub fn decode_with_hrp(
+  input : String,
+  expected_hrp : String,
+) -> Result[Decoded, Bech32Error] {
+  match validate_hrp(expected_hrp) {
+    Err(err) => return Err(err)
+    Ok(_) => ()
+  }
+  let expected = expected_hrp.to_lower()
+  match decode(input) {
+    Err(err) => Err(err)
+    Ok(decoded) =>
+      if decoded.hrp == expected {
+        Ok(decoded)
+      } else {
+        Err(UnexpectedHrp(expected, decoded.hrp))
+      }
+  }
+}
+
+///|
+/// Inspects a valid Bech32 or Bech32m string and returns printable metadata.
+pub fn inspect(input : String) -> Result[Bech32Info, Bech32Error] {
+  match decode(input) {
+    Err(err) => Err(err)
+    Ok(decoded) => {
+      let normalized = input.to_lower()
+      let sep = last_separator(normalized)
+      let data_part_length = normalized.length() - sep - 1
+      Ok({
+        input,
+        normalized,
+        hrp: decoded.hrp,
+        data: decoded.data,
+        checksum: checksum_words_from_normalized(normalized),
+        variant: decoded.variant,
+        total_length: input.length(),
+        separator_index: sep,
+        data_part_length,
+        data_length: data_part_length - 6,
+        checksum_length: 6,
+        case_style: classify_case(input),
+        segwit_valid: decode_segwit(input) is Ok(_),
+      })
+    }
+  }
+}
+
+///|
+/// Produces one validation report that is convenient for CLI and UI callers.
+pub fn validation_report(input : String) -> ValidationReport {
+  let p = profile(input)
+  match decode(input) {
+    Err(err) =>
+      {
+        input,
+        normalized: p.normalized,
+        valid: false,
+        segwit_valid: false,
+        variant: "",
+        hrp: "",
+        error_code: error_code(err),
+        error_message: error_message(err),
+        total_length: p.total_length,
+        separator_index: p.separator_index,
+        data_part_length: p.data_part_length,
+      }
+    Ok(decoded) =>
+      {
+        input,
+        normalized: p.normalized,
+        valid: true,
+        segwit_valid: decode_segwit(input) is Ok(_),
+        variant: variant_name(decoded.variant),
+        hrp: decoded.hrp,
+        error_code: "",
+        error_message: "",
+        total_length: p.total_length,
+        separator_index: p.separator_index,
+        data_part_length: p.data_part_length,
+      }
+  }
+}
+
+///|
+/// Validates many inputs while preserving input order.
+pub fn validate_many(inputs : Array[String]) -> Array[ValidationReport] {
+  let reports = Array::new(capacity=inputs.length())
+  for input in inputs {
+    reports.push(validation_report(input))
+  }
+  reports
+}
+
+///|
+/// Counts valid Bech32 or Bech32m strings in a batch.
+pub fn valid_count(inputs : Array[String]) -> Int {
+  let mut count = 0
+  for input in inputs {
+    if is_valid(input) {
+      count += 1
+    }
+  }
+  count
+}
+
+///|
+/// Counts invalid Bech32 or Bech32m strings in a batch.
+pub fn invalid_count(inputs : Array[String]) -> Int {
+  inputs.length() - valid_count(inputs)
+}
+
+///|
+/// Returns true when every input in a batch is valid.
+pub fn all_valid(inputs : Array[String]) -> Bool {
+  valid_count(inputs) == inputs.length()
+}
+
+///|
+/// Counts valid SegWit addresses in a batch.
+pub fn segwit_valid_count(inputs : Array[String]) -> Int {
+  let mut count = 0
+  for input in inputs {
+    if is_valid_segwit(input) {
+      count += 1
+    }
+  }
+  count
+}
+
+///|
+/// Infers the common SegWit network from an HRP.
+pub fn segwit_network(hrp : String) -> SegwitNetwork {
+  let lower = hrp.to_lower()
+  if lower == "bc" {
+    NetworkBitcoinMainnet
+  } else if lower == "tb" {
+    NetworkBitcoinTestnet
+  } else if lower == "bcrt" {
+    NetworkBitcoinRegtest
+  } else {
+    NetworkUnknown(lower)
+  }
+}
+
+///|
+/// Returns true for standard Bitcoin SegWit HRPs: bc, tb, and bcrt.
+pub fn is_standard_segwit_hrp(hrp : String) -> Bool {
+  match segwit_network(hrp) {
+    NetworkBitcoinMainnet => true
+    NetworkBitcoinTestnet => true
+    NetworkBitcoinRegtest => true
+    NetworkUnknown(_) => false
+  }
+}
+
+///|
+/// Infers the SegWit network after full SegWit address validation.
+pub fn segwit_network_of(input : String) -> Result[SegwitNetwork, Bech32Error] {
+  match decode_segwit(input) {
+    Err(err) => Err(err)
+    Ok(address) => Ok(segwit_network(address.hrp))
+  }
+}
+
+///|
+/// Classifies a witness program by version and program length.
+pub fn witness_program_kind(
+  version : Int,
+  program_length : Int,
+) -> WitnessProgramKind {
+  if version == 0 && program_length == 20 {
+    WitnessProgramP2WPKH
+  } else if version == 0 && program_length == 32 {
+    WitnessProgramP2WSH
+  } else if version == 1 && program_length == 32 {
+    WitnessProgramTaproot
+  } else {
+    WitnessProgramOther
+  }
+}
+
+///|
+/// Inspects a valid SegWit address and returns network and witness metadata.
+pub fn inspect_segwit(input : String) -> Result[SegwitInfo, Bech32Error] {
+  match decode_segwit(input) {
+    Err(err) => Err(err)
+    Ok(address) => {
+      let program_length = address.program.length()
+      Ok({
+        input,
+        normalized: input.to_lower(),
+        hrp: address.hrp,
+        version: address.version,
+        program: address.program,
+        program_length,
+        variant: address.variant,
+        network: segwit_network(address.hrp),
+        program_kind: witness_program_kind(address.version, program_length),
+      })
+    }
+  }
+}
+
+///|
+/// Decodes a SegWit address and additionally checks the expected network.
+pub fn decode_segwit_on_network(
+  input : String,
+  expected : SegwitNetwork,
+) -> Result[SegwitAddress, Bech32Error] {
+  match decode_segwit(input) {
+    Err(err) => Err(err)
+    Ok(address) => {
+      let actual = segwit_network(address.hrp)
+      if actual == expected {
+        Ok(address)
+      } else {
+        Err(UnexpectedNetwork(expected, actual))
+      }
+    }
+  }
+}
+
+///|
+/// Stable machine-readable code for every structured error.
+pub fn error_code(err : Bech32Error) -> String {
+  match err {
+    EmptyInput => "empty_input"
+    TooLong(_) => "too_long"
+    MissingSeparator => "missing_separator"
+    EmptyHrp => "empty_hrp"
+    EmptyData => "empty_data"
+    MixedCase => "mixed_case"
+    InvalidHrpChar(_, _) => "invalid_hrp_char"
+    InvalidDataChar(_, _) => "invalid_data_char"
+    InvalidDataValue(_, _) => "invalid_data_value"
+    InvalidChecksum => "invalid_checksum"
+    InvalidBitGroup(_, _) => "invalid_bit_group"
+    InvalidPadding => "invalid_padding"
+    InvalidWitnessVersion(_) => "invalid_witness_version"
+    InvalidWitnessProgramLength(_, _) => "invalid_witness_program_length"
+    InvalidWitnessEncoding(_, _) => "invalid_witness_encoding"
+    UnexpectedHrp(_, _) => "unexpected_hrp"
+    UnexpectedNetwork(_, _) => "unexpected_network"
+  }
+}
+
+///|
+/// Human-readable message for every structured error.
+pub fn error_message(err : Bech32Error) -> String {
+  match err {
+    EmptyInput => "input is empty"
+    TooLong(_) => "input exceeds the Bech32 length limit"
+    MissingSeparator => "separator '1' is missing"
+    EmptyHrp => "human-readable part is empty"
+    EmptyData => "data part is too short"
+    MixedCase => "input mixes lowercase and uppercase letters"
+    InvalidHrpChar(_, _) => "human-readable part contains an invalid character"
+    InvalidDataChar(_, _) =>
+      "data part contains a character outside the Bech32 charset"
+    InvalidDataValue(_, _) => "data value is outside the allowed range"
+    InvalidChecksum => "checksum does not match Bech32 or Bech32m"
+    InvalidBitGroup(_, _) => "bit group width is outside the supported range"
+    InvalidPadding => "bit conversion padding is not canonical"
+    InvalidWitnessVersion(_) => "witness version must be between 0 and 16"
+    InvalidWitnessProgramLength(_, _) =>
+      "witness program length is invalid for this version"
+    InvalidWitnessEncoding(_, _) =>
+      "witness version uses the wrong checksum variant"
+    UnexpectedHrp(_, _) => "decoded HRP does not match the expected HRP"
+    UnexpectedNetwork(_, _) =>
+      "decoded SegWit network does not match the expected network"
+  }
+}
+
+///|
 fn validate_hrp(hrp : String) -> Result[Unit, Bech32Error] {
   if hrp.is_empty() {
     return Err(EmptyHrp)
@@ -358,16 +891,7 @@ fn witness_variant(version : Int) -> Variant {
 
 ///|
 fn has_mixed_case(input : String) -> Bool {
-  let mut has_lower = false
-  let mut has_upper = false
-  for ch in input {
-    if ch.is_ascii_lowercase() {
-      has_lower = true
-    } else if ch.is_ascii_uppercase() {
-      has_upper = true
-    }
-  }
-  has_lower && has_upper
+  classify_case(input) == CaseMixed
 }
 
 ///|
@@ -436,6 +960,15 @@ fn create_checksum(
   }
   let pm = polymod(values) ^ constant
   Array::makei(6, i => (pm >> (5 * (5 - i))) & 31)
+}
+
+///|
+fn checksum_words_from_normalized(input : String) -> Array[Int] {
+  let checksum = Array::new(capacity=6)
+  for i in (input.length() - 6)..<input.length() {
+    checksum.push(charset_value(char_at(input, i)).unwrap())
+  }
+  checksum
 }
 
 ///|
