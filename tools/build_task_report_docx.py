@@ -219,6 +219,7 @@ def build():
             ("邮箱", "609588498@qq.com"),
             ("GitHub 仓库", "https://github.com/MM-ai-nb/bech32-kit"),
             ("Mooncakes 包名", "MM-ai-nb/bech32-kit"),
+            ("Mooncakes 页面", "https://mooncakes.io/docs/MM-ai-nb/bech32-kit"),
             ("版本 / 许可证", "0.1.0 / MIT"),
             ("报告日期", "2026-08-20"),
         ],
@@ -280,13 +281,14 @@ def build():
     ]:
         add_numbered(doc, item)
 
-    add_heading(doc, "六、Mooncakes 发布准备", 1)
+    add_heading(doc, "六、Mooncakes 发布记录", 1)
     add_body(
         doc,
         "项目已在 moon.mod 中配置 Mooncakes 元数据：当前包名 MM-ai-nb/bech32-kit，版本 0.1.0，仓库 "
-        "https://github.com/MM-ai-nb/bech32-kit.git，许可证 MIT，README 为 README.md。正式发布需使用 MM-ai-nb 对应的 Mooncakes 登录会话。",
+        "https://github.com/MM-ai-nb/bech32-kit.git，许可证 MIT，README 为 README.md。"
+        "Mooncakes 页面为 https://mooncakes.io/docs/MM-ai-nb/bech32-kit。",
     )
-    add_body(doc, "正式发布需要使用 MM-ai-nb 对应的 Mooncakes 账号登录后执行：moon login；moon publish --dry-run；moon publish。")
+    add_body(doc, "2026-08-20 已使用 MM-ai-nb 对应的 Mooncakes 登录会话完成发布：moon whoami 显示 MM-ai-nb；moon publish --dry-run 服务器返回 202 Accepted；moon publish 服务器返回 200 OK。")
 
     add_heading(doc, "七、开源许可证与第三方依赖", 1)
     add_body(
@@ -315,14 +317,14 @@ def build():
         doc,
         [
             ("以 MoonBit 作为主要实现语言", "已满足", "核心代码、测试和示例均为 MoonBit。"),
-            ("代码仓库公开且可以正常访问", "待推送确认", "远程仓库已配置为 MM-ai-nb/bech32-kit，推送后检查 GitHub 默认分支和 CI 状态。"),
+            ("代码仓库公开且可以正常访问", "已满足", "已推送到 MM-ai-nb/bech32-kit 默认分支，远端 CI 已通过。"),
             ("提供清晰、完整的 README", "已满足", "README 已说明用途、安装、功能、示例和验收命令。"),
             ("提供可以实际运行的示例", "已满足", "cmd/main 可运行并输出 SegWit 地址。"),
             ("配置持续集成 CI", "已满足", "已配置 GitHub Actions。"),
             ("提供可运行的测试", "已满足", "本地 moon test 结果为 28 passed。"),
             ("项目能够正常构建", "已满足", "moon check 与 moon build 均通过。"),
             ("有效 MoonBit 代码规模", "已满足", "当前有效 MoonBit 行数为 4258 行。"),
-            ("按要求发布至 mooncakes.io", "待登录发布", "moon.mod 元数据已配置为 MM-ai-nb/bech32-kit，待登录 Mooncakes 后发布。"),
+            ("按要求发布至 mooncakes.io", "已满足", "已发布，包名为 MM-ai-nb/bech32-kit，版本 0.1.0。"),
             ("开发过程和提交记录可以追踪", "已整理", "当前分支基于 MM-ai-nb/main 整理，本次新增提交将使用卓娟身份信息。"),
             ("功能边界和维护价值明确", "已满足", "DESIGN.md 与本报告均已说明。"),
             ("第三方代码、素材和依赖符合开源许可证", "已满足", "MIT License，无外部素材和额外运行时依赖。"),

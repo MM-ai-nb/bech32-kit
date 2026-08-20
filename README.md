@@ -28,7 +28,13 @@ Mooncakes 包名：
 MM-ai-nb/bech32-kit
 ```
 
-> 包名已与 `moon.mod` 保持一致；正式发布时请使用 `MM-ai-nb` 对应的 Mooncakes 登录会话。
+Mooncakes 页面：
+
+```text
+https://mooncakes.io/docs/MM-ai-nb/bech32-kit
+```
+
+> `0.1.0` 已使用 `MM-ai-nb` 对应的 Mooncakes 登录会话发布。
 
 ## 最小使用示例
 
@@ -139,7 +145,7 @@ moon run cmd/main
 moon info
 ```
 
-`moon publish --dry-run` 和 `moon publish` 需要使用 `MM-ai-nb` 对应的 Mooncakes 登录会话，避免账号信息混淆。
+`0.1.0` 已发布到 Mooncakes；后续版本发布仍需使用 `MM-ai-nb` 对应的 Mooncakes 登录会话，避免账号信息混淆。
 
 测试覆盖正常向量、错误输入、边界条件、bit 转换、字节导出、诊断报告、批量校验、策略校验、文本扫描、SegWit v0/v1 编解码、网络识别与主要错误路径。
 

@@ -9,6 +9,7 @@
 - 邮箱：609588498@qq.com
 - GitHub 仓库：https://github.com/MM-ai-nb/bech32-kit
 - Mooncakes 包名：MM-ai-nb/bech32-kit
+- Mooncakes 页面：https://mooncakes.io/docs/MM-ai-nb/bech32-kit
 - 当前版本：0.1.0
 - 开源许可证：MIT
 - 报告日期：2026-08-20
@@ -142,25 +143,23 @@ moon info
 4. 执行 `moon test`；
 5. 执行 `moon run cmd/main` 验证示例可运行。
 
-## 八、Mooncakes 发布准备
+## 八、Mooncakes 发布记录
 
 项目已在 `moon.mod` 中配置 Mooncakes 元数据：
 
 - 包名：`MM-ai-nb/bech32-kit`
 - 版本：`0.1.0`
 - 仓库：`https://github.com/MM-ai-nb/bech32-kit.git`
+- Mooncakes 页面：`https://mooncakes.io/docs/MM-ai-nb/bech32-kit`
 - 许可证：`MIT`
 - README：`README.md`
 
-正式发布需要使用具有对应 owner 权限的 Mooncakes 账号登录后执行：
+2026-08-20 已使用 `MM-ai-nb` 对应的 Mooncakes 登录会话完成发布：
 
-```bash
-moon login
-moon publish --dry-run
-moon publish
-```
-
-当前尚未执行正式发布，原因是发布步骤需要先登录 `MM-ai-nb` 对应的 Mooncakes 账号，避免账号与包名、参赛者信息混淆。发布完成后应补充 mooncakes.io 包页面链接和版本发布记录。
+- `moon whoami` 显示 `MM-ai-nb`；
+- `moon publish --dry-run` 完成本地与服务器端校验，服务器返回 `202 Accepted`；
+- `moon publish` 正式发布成功，服务器返回 `200 OK`；
+- Mooncakes 页面访问检查返回 200。
 
 ## 九、开源许可证与第三方依赖
 
@@ -183,14 +182,14 @@ moon publish
 | 验收条件 | 当前状态 |
 | --- | --- |
 | 以 MoonBit 作为主要实现语言 | 已满足 |
-| 代码仓库公开且可以正常访问 | 本地目标远端已配置为 https://github.com/MM-ai-nb/bech32-kit，推送后需检查默认分支和 CI |
+| 代码仓库公开且可以正常访问 | 已推送到 https://github.com/MM-ai-nb/bech32-kit 默认分支，远端 CI 已通过 |
 | 提供清晰、完整的 README | 已满足 |
 | 说明项目用途、主要功能及使用方法 | 已满足 |
 | 提供可以实际运行的示例 | 已满足 |
 | 配置持续集成 CI | 已满足 |
 | 提供可运行的测试 | 已满足 |
 | 项目能够正常构建 | 已满足 |
-| 按要求发布至 mooncakes.io | 元数据已配置，待使用 MM-ai-nb 对应 Mooncakes 账号登录发布 |
+| 按要求发布至 mooncakes.io | 已发布，包名为 MM-ai-nb/bech32-kit，版本 0.1.0 |
 | 开发过程和提交记录可以追踪 | 当前分支基于 MM-ai-nb/main 整理，本次新增提交将使用卓娟身份信息 |
 | 项目具有明确的功能边界和后续维护价值 | 已满足 |
 | 第三方代码、素材和依赖符合开源许可证要求 | 已满足 |

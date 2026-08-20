@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - 2026-08-19
+## 0.1.0 - 2026-08-20
 
 - 增加输入 profile、规范化、checksum words 提取和 canonical 判断接口。
 - 增加 `Diagnostic`、`ValidationSummary`、诊断 severity、recommendation、hints、结果对比和可打印报告。
@@ -10,8 +10,9 @@
 - 扩充黑盒与白盒测试，覆盖诊断、批量报告、policy、scan、HRP guard 和 SegWit network guard 场景。
 - 同步更新 README、API 文档、技术方案说明和任务报告书。
 - 补充正式格式的八月黑客松项目申报书和 Mooncakes 发布准备说明。
+- 发布 `MM-ai-nb/bech32-kit` 到 mooncakes.io。
 
-## 0.1.0 - 2026-08-09
+## 开发基础 - 2026-08-09
 
 - 初始化 MoonBit 包元数据与 MIT License。
 - 实现 Bech32 / Bech32m 编码、解码和 checksum 校验。
@@ -22,6 +23,5 @@
 
 ## 后续计划
 
-- 发布至 mooncakes.io 后补充版本发布记录。
 - 增加更多公开测试向量和边界测试。
 - 根据使用反馈维护 API 与错误类型。

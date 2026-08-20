@@ -1,15 +1,16 @@
-# Mooncakes 发布准备说明
+# Mooncakes 发布记录
 
 ## 当前包信息
 
 - 包名：`MM-ai-nb/bech32-kit`
 - 版本：`0.1.0`
 - 仓库：`https://github.com/MM-ai-nb/bech32-kit.git`
+- Mooncakes 页面：`https://mooncakes.io/docs/MM-ai-nb/bech32-kit`
 - README：`README.md`
 - License：`MIT`
 - 主要语言：MoonBit
 
-以上信息已写入 `moon.mod`，满足 Mooncakes 发布前的基础元数据要求。发布前最后核对浏览器授权和 `moon` 登录会话均指向 `MM-ai-nb`。
+以上信息已写入 `moon.mod`。`0.1.0` 已使用 `MM-ai-nb` 对应的 Mooncakes 登录会话发布。
 
 ## 发布前本地检查
 
@@ -37,29 +38,21 @@ moon info
 - `moon test --deny-warn`：通过
 - `moon info`：通过
 
-## 发布命令
+## 发布记录
 
-正式发布需要使用 `MM-ai-nb` 对应的 Mooncakes 登录会话：
+2026-08-20 发布确认：
 
-```bash
-moon login
-moon publish --dry-run
-moon publish
-```
-
-建议流程：
-
-1. 推送到 GitHub 仓库 `https://github.com/MM-ai-nb/bech32-kit` 的默认分支。
-2. 使用 `MM-ai-nb` 对应的 Mooncakes 账号执行 `moon login`。
-3. 执行 `moon publish --dry-run` 检查包内容。
-4. dry run 通过后执行 `moon publish`。
-5. 发布完成后记录 mooncakes.io 包页面链接，并更新 `CHANGELOG.md`、`TASK_REPORT.md` 和 README。
+- `moon whoami`：`MM-ai-nb`
+- `moon publish --dry-run`：服务器返回 `202 Accepted`，detail 为 `Dry run completed successfully`
+- `moon publish`：服务器返回 `200 OK`
+- Mooncakes 页面访问检查：`https://mooncakes.io/docs/MM-ai-nb/bech32-kit` 返回 200
 
 ## 当前状态
 
 - Mooncakes 元数据：已配置。
 - 本地构建测试：已通过。
-- GitHub 远程仓库：已配置为 `https://github.com/MM-ai-nb/bech32-kit.git`，仍需把本地新增提交推送到默认分支。
-- Mooncakes 正式发布：待登录正确账号后执行。
+- GitHub 远程仓库：已推送到 `https://github.com/MM-ai-nb/bech32-kit.git` 的默认分支。
+- GitHub Actions CI：已通过。
+- Mooncakes 正式发布：已完成，版本 `0.1.0`。
 
-执行发布前需确认 GitHub 浏览器授权页和 Mooncakes 登录会话显示的是 `MM-ai-nb`，避免账号与包名混淆。
+后续发布新版本前仍需确认 GitHub 浏览器授权页和 Mooncakes 登录会话显示的是 `MM-ai-nb`，避免账号与包名混淆。
