@@ -5,8 +5,7 @@
 - 项目名称：bech32-kit
 - 项目类型：MoonBit 原生编码解码基础库
 - 参赛者：卓娟
-- 联系电话：13855703757
-- 邮箱：609588498@qq.com
+- 联系方式：见飞书报名表 / 正式提交材料
 - GitHub 仓库：https://github.com/MM-ai-nb/bech32-kit
 - Mooncakes 包名：MM-ai-nb/bech32-kit
 - Mooncakes 页面：https://mooncakes.io/docs/MM-ai-nb/bech32-kit
@@ -138,10 +137,12 @@ moon info
 项目已配置 GitHub Actions 工作流 `.github/workflows/ci.yml`。当仓库发生 push 或 pull request 时，CI 会自动执行：
 
 1. 安装 MoonBit 工具链；
-2. 执行 `moon check`；
-3. 执行 `moon build`；
-4. 执行 `moon test`；
-5. 执行 `moon run cmd/main` 验证示例可运行。
+2. 执行 `moon fmt --check`；
+3. 执行 `moon check --deny-warn`；
+4. 执行 `moon build`；
+5. 执行 `moon test --deny-warn`；
+6. 执行 `moon info`；
+7. 执行 `moon run cmd/main` 验证示例可运行。
 
 ## 八、Mooncakes 发布记录
 

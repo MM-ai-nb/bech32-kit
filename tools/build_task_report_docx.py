@@ -215,8 +215,7 @@ def build():
         doc,
         [
             ("参赛者", "卓娟"),
-            ("联系电话", "13855703757"),
-            ("邮箱", "609588498@qq.com"),
+            ("联系方式", "见飞书报名表 / 正式提交材料"),
             ("GitHub 仓库", "https://github.com/MM-ai-nb/bech32-kit"),
             ("Mooncakes 包名", "MM-ai-nb/bech32-kit"),
             ("Mooncakes 页面", "https://mooncakes.io/docs/MM-ai-nb/bech32-kit"),
@@ -274,9 +273,11 @@ def build():
     add_body(doc, "项目已配置 GitHub Actions 工作流 .github/workflows/ci.yml。CI 在 push 和 pull request 时执行以下步骤：")
     for item in [
         "安装 MoonBit 工具链。",
-        "执行 moon check。",
+        "执行 moon fmt --check。",
+        "执行 moon check --deny-warn。",
         "执行 moon build。",
-        "执行 moon test。",
+        "执行 moon test --deny-warn。",
+        "执行 moon info。",
         "执行 moon run cmd/main 验证示例可运行。",
     ]:
         add_numbered(doc, item)

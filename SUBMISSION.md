@@ -4,10 +4,10 @@
 
 - 项目名称：bech32-kit
 - 参赛者：卓娟
-- 手机号：13855703757
-- 邮箱：609588498@qq.com
+- 联系方式：见飞书报名表 / 正式提交材料
 - GitHub 仓库：https://github.com/MM-ai-nb/bech32-kit
 - Mooncakes 包名：MM-ai-nb/bech32-kit
+- Mooncakes 页面：https://mooncakes.io/docs/MM-ai-nb/bech32-kit
 - 主要实现语言：MoonBit
 - 开源许可证：MIT
 - 当前版本：0.1.0
@@ -40,7 +40,7 @@
 - 示例程序输出 `bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4`；
 - 当前有效 MoonBit 行数为 4258 行，统计时排除 `_build`、生成接口文件、空行和 `//` 注释行；
 - README、API.md、DESIGN.md、TASK_REPORT.md、MOONCAKES.md 和 Word 版任务报告书已准备完成；
-- 正式提交前仍需确认 GitHub 仓库 owner / 授权关系，并使用正确 Mooncakes 账号完成发布。
+- GitHub 默认分支已推送到 `MM-ai-nb/bech32-kit`，GitHub Actions CI 已通过，Mooncakes `0.1.0` 已发布并可访问。
 
 ## 六、原创性与开源合规
 
